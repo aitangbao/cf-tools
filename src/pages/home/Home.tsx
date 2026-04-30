@@ -19,7 +19,8 @@ import {
     SwapOutlined,
     ScheduleOutlined,
     FileImageOutlined,
-    SafetyOutlined
+    SafetyOutlined,
+    DiffOutlined
 } from '@ant-design/icons';
 import { theme } from 'antd';
 import { useSiteStats } from '../../hooks/useAnalytics';
@@ -53,6 +54,13 @@ function Home() {
             description: '解析和验证 Cron 定时表达式',
             icon: <ScheduleOutlined style={{ fontSize: '24px', color: '#eb2f96' }} />,
             path: '/tools/cron-expression',
+            available: true
+        },
+        {
+            title: '文本比较',
+            description: '比较两个文本并查看它们之间的差异',
+            icon: <DiffOutlined style={{ fontSize: '24px', color: '#1890ff' }} />,
+            path: '/tools/text-diff',
             available: true
         },
         {

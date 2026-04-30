@@ -20,6 +20,7 @@ import NamingConverter from './pages/tools/NamingConverter';
 import CronExpression from './pages/tools/CronExpression';
 import Base64FileConverter from './pages/tools/Base64FileConverter';
 import JwtParser from './pages/tools/JwtParser';
+import TextDiff from './pages/tools/TextDiff';
 
 // 导入AI页面
 import AIToolsOverview from './pages/ai/AIToolsOverview';
@@ -55,6 +56,7 @@ function App() {
                               <Route path="/tools/cron-expression" element={<CronExpression />} />
                                         <Route path="/tools/base64-file" element={<Base64FileConverter />} />
                                                   <Route path="/tools/jwt-parser" element={<JwtParser />} />
+                                                            <Route path="/tools/text-diff" element={<TextDiff />} />
 
           {/* AI工具页面路由 */}
           <Route path="/ai" element={<AIToolsOverview />} />
