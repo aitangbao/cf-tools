@@ -35,19 +35,48 @@ function Home() {
     // 开发者工具集
     const devTools = [
         {
+            title: 'JSON/配置文件格式转换',
+            description: '格式化&验证&转换配置文件',
+            icon: <CodeOutlined style={{ fontSize: '24px', color: '#52c41a' }} />,
+            path: '/tools/config-formatter',
+            available: true
+        },
+        {
+            title: '命名转换器',
+            description: '变量名命名风格快速互转',
+            icon: <EditOutlined style={{ fontSize: '24px', color: '#faad14' }} />,
+            path: '/tools/naming-converter',
+            available: true
+        },
+        {
+            title: 'Cron表达式',
+            description: '解析和验证 Cron 定时表达式',
+            icon: <ScheduleOutlined style={{ fontSize: '24px', color: '#eb2f96' }} />,
+            path: '/tools/cron-expression',
+            available: true
+        },
+        {
+            title: 'Base64文件转换',
+            description: '文件与 Base64 编码互转，支持图片预览',
+            icon: <FileImageOutlined style={{ fontSize: '24px', color: '#52c41a' }} />,
+            path: '/tools/base64-file',
+            available: true
+        },
+        {
+            title: 'JWT解析器',
+            description: '解析和解码 JSON Web Token',
+            icon: <SafetyOutlined style={{ fontSize: '24px', color: '#f5222d' }} />,
+            path: '/tools/jwt-parser',
+            available: true
+        },
+        {
             title: 'Base64编解码',
             description: '快速进行Base64编码和解码操作',
             icon: <CodeOutlined style={{ fontSize: '24px', color: '#1890ff' }} />,
             path: '/tools/base64',
             available: true
         },
-        {
-            title: '配置格式转换',
-            description: '格式化&验证&转换配置文件',
-            icon: <CodeOutlined style={{ fontSize: '24px', color: '#52c41a' }} />,
-            path: '/tools/config-formatter',
-            available: true
-        },
+
         {
             title: 'URL编解码',
             description: 'URL编码和解码工具',
@@ -102,34 +131,6 @@ function Home() {
             description: '无流量、高速、点对点文件传输',
             icon: <SwapOutlined style={{ fontSize: '24px', color: '#13c2c2' }} />,
             path: '/tools/file-transfer',
-            available: true
-        },
-        {
-            title: '命名转换器',
-            description: '变量名命名风格快速互转',
-            icon: <EditOutlined style={{ fontSize: '24px', color: '#faad14' }} />,
-            path: '/tools/naming-converter',
-            available: true
-        },
-        {
-            title: 'Cron表达式',
-            description: '解析和验证 Cron 定时表达式',
-            icon: <ScheduleOutlined style={{ fontSize: '24px', color: '#eb2f96' }} />,
-            path: '/tools/cron-expression',
-            available: true
-        },
-        {
-            title: 'Base64文件转换',
-            description: '文件与 Base64 编码互转，支持图片预览',
-            icon: <FileImageOutlined style={{ fontSize: '24px', color: '#52c41a' }} />,
-            path: '/tools/base64-file',
-            available: true
-        },
-        {
-            title: 'JWT解析器',
-            description: '解析和解码 JSON Web Token',
-            icon: <SafetyOutlined style={{ fontSize: '24px', color: '#f5222d' }} />,
-            path: '/tools/jwt-parser',
             available: true
         }
     ];

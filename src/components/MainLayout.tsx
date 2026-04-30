@@ -53,8 +53,12 @@ const menuItems = [
             </span>
         ),
         children: [
+            { key: '/tools/config-formatter', icon: <CodeOutlined />, label: <Link to="/tools/config-formatter">JSON/配置文件格式转换</Link> },
+            { key: '/tools/naming-converter', icon: <EditOutlined />, label: <Link to="/tools/naming-converter">命名转换器</Link> },
+            { key: '/tools/cron-expression', icon: <ScheduleOutlined />, label: <Link to="/tools/cron-expression">Cron表达式</Link> },
+            { key: '/tools/base64-file', icon: <FileImageOutlined />, label: <Link to="/tools/base64-file">Base64文件转换</Link> },
+            { key: '/tools/jwt-parser', icon: <SafetyOutlined />, label: <Link to="/tools/jwt-parser">JWT解析器</Link> },
             { key: '/tools/base64', icon: <CodeOutlined />, label: <Link to="/tools/base64">Base64编解码</Link> },
-            { key: '/tools/config-formatter', icon: <CodeOutlined />, label: <Link to="/tools/config-formatter">配置格式转换</Link> },
             { key: '/tools/url-codec', icon: <LinkOutlined />, label: <Link to="/tools/url-codec">URL编解码</Link> },
             { key: '/tools/timestamp', icon: <ClockCircleOutlined />, label: <Link to="/tools/timestamp">时间戳转换</Link> },
             { key: '/tools/qr-code-generator', icon: <QrcodeOutlined />, label: <Link to="/tools/qr-code-generator">二维码生成</Link> },
@@ -63,10 +67,8 @@ const menuItems = [
             { key: '/tools/password-generator', icon: <LockOutlined />, label: <Link to="/tools/password-generator">密码生成器</Link> },
             { key: '/tools/ip-calculator', icon: <CodeOutlined />, label: <Link to="/tools/ip-calculator">IP计算器</Link> },
             { key: '/tools/file-transfer', icon: <SwapOutlined />, label: <Link to="/tools/file-transfer">P2P文件直传</Link> },
-                        { key: '/tools/naming-converter', icon: <EditOutlined />, label: <Link to="/tools/naming-converter">命名转换器</Link> },
-                                    { key: '/tools/cron-expression', icon: <ScheduleOutlined />, label: <Link to="/tools/cron-expression">Cron表达式</Link> },
-                                                { key: '/tools/base64-file', icon: <FileImageOutlined />, label: <Link to="/tools/base64-file">Base64文件转换</Link> },
-                                                            { key: '/tools/jwt-parser', icon: <SafetyOutlined />, label: <Link to="/tools/jwt-parser">JWT解析器</Link> },
+
+
         ]
     },
     {
