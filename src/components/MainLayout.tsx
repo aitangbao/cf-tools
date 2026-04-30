@@ -31,6 +31,7 @@ import {
     SwapOutlined,
     ScheduleOutlined,
     FileImageOutlined,
+    SafetyOutlined,
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import CuteAvatar from './CuteAvatar';
@@ -65,6 +66,7 @@ const menuItems = [
                         { key: '/tools/naming-converter', icon: <EditOutlined />, label: <Link to="/tools/naming-converter">命名转换器</Link> },
                                     { key: '/tools/cron-expression', icon: <ScheduleOutlined />, label: <Link to="/tools/cron-expression">Cron表达式</Link> },
                                                 { key: '/tools/base64-file', icon: <FileImageOutlined />, label: <Link to="/tools/base64-file">Base64文件转换</Link> },
+                                                            { key: '/tools/jwt-parser', icon: <SafetyOutlined />, label: <Link to="/tools/jwt-parser">JWT解析器</Link> },
         ]
     },
     {
@@ -83,7 +85,7 @@ const menuItems = [
             { key: '/ai/text-translation', icon: <TranslationOutlined />, label: <Link to="/ai/text-translation">AI文本翻译</Link> },
         ]
     },
-    { key: '/about', icon: <PictureOutlined />, label: <Link to="/about">关于</Link> },
+    { key: '/about', icon: <PictureOutlined />, label: <Link to="https://219921.xyz/">关于</Link> },
 ];
 
 

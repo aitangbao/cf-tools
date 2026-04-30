@@ -18,7 +18,8 @@ import {
     CalculatorOutlined,
     SwapOutlined,
     ScheduleOutlined,
-    FileImageOutlined
+    FileImageOutlined,
+    SafetyOutlined
 } from '@ant-design/icons';
 import { theme } from 'antd';
 import { useSiteStats } from '../../hooks/useAnalytics';
@@ -122,6 +123,13 @@ function Home() {
             description: '文件与 Base64 编码互转，支持图片预览',
             icon: <FileImageOutlined style={{ fontSize: '24px', color: '#52c41a' }} />,
             path: '/tools/base64-file',
+            available: true
+        },
+        {
+            title: 'JWT解析器',
+            description: '解析和解码 JSON Web Token',
+            icon: <SafetyOutlined style={{ fontSize: '24px', color: '#f5222d' }} />,
+            path: '/tools/jwt-parser',
             available: true
         }
     ];
