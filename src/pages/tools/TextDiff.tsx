@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { Card, Input, Button, Typography, Row, Col } from 'antd';
+import { useState, useMemo } from 'react';
+import { Card, Input, Typography, Row, Col } from 'antd';
 import { DiffOutlined } from '@ant-design/icons';
 import { useAutoTrackVisit } from '../../hooks/useAnalytics';
 
@@ -114,12 +114,8 @@ export default function TextDiff() {
 
     const [oldText, setOldText] = useState('');
     const [newText, setNewText] = useState('');
-    const [diffResult, setDiffResult] = useState<DiffLine[] | null>(null);
 
-    const handleCompare = useCallback(() => {
-        const result = computeDiff(oldText, newText);
-        setDiffResult(result);
-    }, [oldText, newText]);
+    const diffResult = useMemo(() => computeDiff(oldText, newText), [oldText, newText]);
 
     const lineHeight = '22px';
 
@@ -252,14 +248,8 @@ export default function TextDiff() {
                 </Col>
             </Row>
 
-            <div style={{ marginTop: '16px', marginBottom: '16px', textAlign: 'center' }}>
-                <Button type="primary" size="large" onClick={handleCompare}>
-                    比较差异
-                </Button>
-            </div>
-
-            {diffResult && stats && (
-                <div style={{ marginBottom: '12px' }}>
+            {stats && (
+                <div style={{ marginTop: '16px', marginBottom: '12px' }}>
                     <span style={{ marginRight: '16px' }}>
                         相同: <strong>{stats.same}</strong> 行
                     </span>
@@ -272,7 +262,7 @@ export default function TextDiff() {
                 </div>
             )}
 
-            {diffResult && (
+            {
                 <Row gutter={[0, 0]} style={{ border: '1px solid #e8e8e8', borderRadius: '4px', overflow: 'hidden' }}>
                     <Col xs={24} md={12}>
                         <div
@@ -304,7 +294,7 @@ export default function TextDiff() {
                         <div style={{ maxHeight: '600px', overflow: 'auto' }}>{renderSide(diffResult, 'new')}</div>
                     </Col>
                 </Row>
-            )}
+            }
         </div>
     );
 }
