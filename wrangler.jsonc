@@ -22,13 +22,13 @@
 	"kv_namespaces": [
 		{
 			"binding": "ANALYTICS",
-			"id": "867c654ae1864ffc8e2ad5be758195d5",
-			"preview_id": "867c654ae1864ffc8e2ad5be758195d5"
+			"id": "f9eb9e67e76a4ee698da006cb1565b6b",
+			"preview_id": "f9eb9e67e76a4ee698da006cb1565b6b"
 		},
 		{
 			"binding": "P2P_KV",
-			"id": "81c4f28d6f894b06a4c6e7c5dbc421fd",
-			"preview_id": "e534b681aee54753888ad5c541c5a582"
+			"id": "918300ce170c4b8981d2ff504300d62a",
+			"preview_id": "918300ce170c4b8981d2ff504300d62a"
 		}
 	],
 	// "durable_objects": {
