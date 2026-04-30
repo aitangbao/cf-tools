@@ -17,7 +17,8 @@ import {
     ThunderboltOutlined,
     CalculatorOutlined,
     SwapOutlined,
-    ScheduleOutlined
+    ScheduleOutlined,
+    FileImageOutlined
 } from '@ant-design/icons';
 import { theme } from 'antd';
 import { useSiteStats } from '../../hooks/useAnalytics';
@@ -114,6 +115,13 @@ function Home() {
             description: '解析和验证 Cron 定时表达式',
             icon: <ScheduleOutlined style={{ fontSize: '24px', color: '#eb2f96' }} />,
             path: '/tools/cron-expression',
+            available: true
+        },
+        {
+            title: 'Base64文件转换',
+            description: '文件与 Base64 编码互转，支持图片预览',
+            icon: <FileImageOutlined style={{ fontSize: '24px', color: '#52c41a' }} />,
+            path: '/tools/base64-file',
             available: true
         }
     ];

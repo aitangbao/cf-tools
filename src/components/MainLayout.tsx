@@ -30,6 +30,7 @@ import {
     MenuOutlined,
     SwapOutlined,
     ScheduleOutlined,
+    FileImageOutlined,
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import CuteAvatar from './CuteAvatar';
@@ -63,6 +64,7 @@ const menuItems = [
             { key: '/tools/file-transfer', icon: <SwapOutlined />, label: <Link to="/tools/file-transfer">P2P文件直传</Link> },
                         { key: '/tools/naming-converter', icon: <EditOutlined />, label: <Link to="/tools/naming-converter">命名转换器</Link> },
                                     { key: '/tools/cron-expression', icon: <ScheduleOutlined />, label: <Link to="/tools/cron-expression">Cron表达式</Link> },
+                                                { key: '/tools/base64-file', icon: <FileImageOutlined />, label: <Link to="/tools/base64-file">Base64文件转换</Link> },
         ]
     },
     {
@@ -164,20 +166,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     return (
         <Layout className="main-layout" style={{ minHeight: '100vh' }}>
-            {/* GitHub 横幅 */}
-            <div className="github-banner">
-                <span className="banner-text">
-                    喜欢这个项目吗？到 <a
-                        href="https://github.com/MainPoser/cf-tools"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="github-link"
-                    >
-                        GitHub
-                    </a> 给我们点个 ⭐ 支持一下吧！
-                </span>
-            </div>
-            {/* 顶部导航栏 */}
             <Header
                 className="top-header"
                 style={{

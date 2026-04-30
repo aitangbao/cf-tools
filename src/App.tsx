@@ -18,6 +18,7 @@ import IPCalculator from './pages/tools/ipcalculator/IPCalculator';
 import FileTransfer from './pages/tools/FileTransfer';
 import NamingConverter from './pages/tools/NamingConverter';
 import CronExpression from './pages/tools/CronExpression';
+import Base64FileConverter from './pages/tools/Base64FileConverter';
 
 // 导入AI页面
 import AIToolsOverview from './pages/ai/AIToolsOverview';
@@ -51,6 +52,7 @@ function App() {
           <Route path="/tools/file-transfer" element={<FileTransfer />} />
                     <Route path="/tools/naming-converter" element={<NamingConverter />} />
                               <Route path="/tools/cron-expression" element={<CronExpression />} />
+                                        <Route path="/tools/base64-file" element={<Base64FileConverter />} />
 
           {/* AI工具页面路由 */}
           <Route path="/ai" element={<AIToolsOverview />} />
