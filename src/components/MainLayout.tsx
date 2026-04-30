@@ -29,6 +29,7 @@ import {
     DownOutlined,
     MenuOutlined,
     SwapOutlined,
+    ScheduleOutlined,
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import CuteAvatar from './CuteAvatar';
@@ -61,6 +62,7 @@ const menuItems = [
             { key: '/tools/ip-calculator', icon: <CodeOutlined />, label: <Link to="/tools/ip-calculator">IP计算器</Link> },
             { key: '/tools/file-transfer', icon: <SwapOutlined />, label: <Link to="/tools/file-transfer">P2P文件直传</Link> },
                         { key: '/tools/naming-converter', icon: <EditOutlined />, label: <Link to="/tools/naming-converter">命名转换器</Link> },
+                                    { key: '/tools/cron-expression', icon: <ScheduleOutlined />, label: <Link to="/tools/cron-expression">Cron表达式</Link> },
         ]
     },
     {

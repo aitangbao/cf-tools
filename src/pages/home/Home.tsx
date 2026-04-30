@@ -16,7 +16,8 @@ import {
     ApiOutlined,
     ThunderboltOutlined,
     CalculatorOutlined,
-    SwapOutlined
+    SwapOutlined,
+    ScheduleOutlined
 } from '@ant-design/icons';
 import { theme } from 'antd';
 import { useSiteStats } from '../../hooks/useAnalytics';
@@ -106,6 +107,13 @@ function Home() {
             description: '变量名命名风格快速互转',
             icon: <EditOutlined style={{ fontSize: '24px', color: '#faad14' }} />,
             path: '/tools/naming-converter',
+            available: true
+        },
+        {
+            title: 'Cron表达式',
+            description: '解析和验证 Cron 定时表达式',
+            icon: <ScheduleOutlined style={{ fontSize: '24px', color: '#eb2f96' }} />,
+            path: '/tools/cron-expression',
             available: true
         }
     ];
