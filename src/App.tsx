@@ -16,6 +16,7 @@ import Markdown from './pages/tools/Markdown';
 import PasswordGenerator from './pages/tools/PasswordGenerator';
 import IPCalculator from './pages/tools/ipcalculator/IPCalculator';
 import FileTransfer from './pages/tools/FileTransfer';
+import NamingConverter from './pages/tools/NamingConverter';
 
 // 导入AI页面
 import AIToolsOverview from './pages/ai/AIToolsOverview';
@@ -47,6 +48,7 @@ function App() {
           <Route path="/tools/password-generator" element={<PasswordGenerator />} />
           <Route path="/tools/ip-calculator" element={<IPCalculator />} />
           <Route path="/tools/file-transfer" element={<FileTransfer />} />
+                    <Route path="/tools/naming-converter" element={<NamingConverter />} />
 
           {/* AI工具页面路由 */}
           <Route path="/ai" element={<AIToolsOverview />} />

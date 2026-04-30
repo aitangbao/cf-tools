@@ -60,6 +60,7 @@ const menuItems = [
             { key: '/tools/password-generator', icon: <LockOutlined />, label: <Link to="/tools/password-generator">密码生成器</Link> },
             { key: '/tools/ip-calculator', icon: <CodeOutlined />, label: <Link to="/tools/ip-calculator">IP计算器</Link> },
             { key: '/tools/file-transfer', icon: <SwapOutlined />, label: <Link to="/tools/file-transfer">P2P文件直传</Link> },
+                        { key: '/tools/naming-converter', icon: <EditOutlined />, label: <Link to="/tools/naming-converter">命名转换器</Link> },
         ]
     },
     {

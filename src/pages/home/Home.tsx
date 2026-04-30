@@ -100,6 +100,13 @@ function Home() {
             icon: <SwapOutlined style={{ fontSize: '24px', color: '#13c2c2' }} />,
             path: '/tools/file-transfer',
             available: true
+        },
+        {
+            title: '命名转换器',
+            description: '变量名命名风格快速互转',
+            icon: <EditOutlined style={{ fontSize: '24px', color: '#faad14' }} />,
+            path: '/tools/naming-converter',
+            available: true
         }
     ];
 
