@@ -136,8 +136,8 @@ function Home() {
             available: true
         },
         {
-            title: 'P2P文件直传',
-            description: '无流量、高速、点对点文件传输',
+            title: 'F2F文件直传',
+            description: '高速、点对点文件传输',
             icon: <SwapOutlined style={{ fontSize: '24px', color: '#13c2c2' }} />,
             path: '/tools/file-transfer',
             available: true

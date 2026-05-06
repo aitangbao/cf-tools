@@ -72,7 +72,7 @@ const menuItems = [
             { key: '/tools/markdown', icon: <FileTextOutlined />, label: <Link to="/tools/markdown">Markdown预览</Link> },
             { key: '/tools/password-generator', icon: <LockOutlined />, label: <Link to="/tools/password-generator">密码生成器</Link> },
             { key: '/tools/ip-calculator', icon: <CodeOutlined />, label: <Link to="/tools/ip-calculator">IP计算器</Link> },
-            { key: '/tools/file-transfer', icon: <SwapOutlined />, label: <Link to="/tools/file-transfer">P2P文件直传</Link> },
+            { key: '/tools/file-transfer', icon: <SwapOutlined />, label: <Link to="/tools/file-transfer">F2F文件直传</Link> },
 
 
         ]
