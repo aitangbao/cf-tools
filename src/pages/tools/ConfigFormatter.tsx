@@ -8,7 +8,7 @@ const { TextArea } = Input;
 const { Title, Paragraph } = Typography;
 const { Option } = Select;
 
-type FormatType = 'json' | 'yaml' | 'xml' | 'toml' | 'csv';
+type FormatType = 'json' | 'yaml' | 'xml' | 'toml' | 'csv' | 'properties';
 
 export default function ConfigFormatter() {
     // 自动统计页面访问
@@ -29,11 +29,14 @@ export default function ConfigFormatter() {
         if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
             return 'json';
         }
-        if (trimmed.includes(':') && !trimmed.includes('{')) {
-            return 'yaml';
-        }
         if (trimmed.startsWith('<')) {
             return 'xml';
+        }
+        if (trimmed.includes('=') && !trimmed.includes('[') && !trimmed.includes(':')) {
+            return 'properties';
+        }
+        if (trimmed.includes(':') && !trimmed.includes('{')) {
+            return 'yaml';
         }
         if (trimmed.includes(',') && trimmed.includes('\n')) {
             return 'csv';
@@ -70,6 +73,8 @@ export default function ConfigFormatter() {
                         return obj;
                     });
                     return { success: true, data };
+                case 'properties':
+                    return parseProperties(text);
                 default:
                     return { success: false, error: '不支持的格式' };
             }
@@ -145,6 +150,47 @@ export default function ConfigFormatter() {
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             return { success: false, error: `XML解析失败: ${errorMessage}` };
+        }
+    };
+
+    // Properties解析函数
+    const parseProperties = (text: string): { success: boolean; data?: any; error?: string } => {
+        try {
+            const result: any = {};
+            const lines = text.split('\n');
+            for (let line of lines) {
+                line = line.trim();
+                if (!line || line.startsWith('#')) continue;
+                const eqIndex = line.indexOf('=');
+                if (eqIndex > 0) {
+                    const key = line.slice(0, eqIndex).trim();
+                    let value = line.slice(eqIndex + 1).trim();
+                    // 处理嵌套key: a.b.c=value
+                    const parts = key.split('.');
+                    let current = result;
+                    for (let i = 0; i < parts.length; i++) {
+                        if (i === parts.length - 1) {
+                            // 尝试转换数字和布尔值
+                            if (!isNaN(Number(value)) && value !== '') {
+                                current[parts[i]] = Number(value);
+                            } else if (value === 'true') {
+                                current[parts[i]] = true;
+                            } else if (value === 'false') {
+                                current[parts[i]] = false;
+                            } else {
+                                current[parts[i]] = value;
+                            }
+                        } else {
+                            if (!current[parts[i]]) current[parts[i]] = {};
+                            current = current[parts[i]];
+                        }
+                    }
+                }
+            }
+            return { success: true, data: result };
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            return { success: false, error: `Properties解析失败: ${errorMessage}` };
         }
     };
 
@@ -302,6 +348,8 @@ export default function ConfigFormatter() {
                     return formatXml(data);
                 case 'toml':
                     return formatToml(data);
+                case 'properties':
+                    return formatProperties(data);
                 case 'csv':
                     if (Array.isArray(data) && data.length > 0) {
                         const headers = Object.keys(data[0]);
@@ -372,6 +420,34 @@ export default function ConfigFormatter() {
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             return { success: false, error: `XML格式化失败: ${errorMessage}` };
+        }
+    };
+
+    // Properties格式化函数（对象扁平化）
+    const formatProperties = (data: any): { success: boolean; result?: string; error?: string } => {
+        try {
+            const flatten = (obj: any, prefix: string = ''): string[] => {
+                const result: string[] = [];
+                for (const [key, value] of Object.entries(obj)) {
+                    const newKey = prefix ? `${prefix}.${key}` : key;
+                    if (value === null || value === undefined) {
+                        continue;
+                    }
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                        result.push(...flatten(value, newKey));
+                    } else if (Array.isArray(value)) {
+                        result.push(`${newKey}=${value.join(',')}`);
+                    } else {
+                        result.push(`${newKey}=${value}`);
+                    }
+                }
+                return result;
+            };
+            const result = flatten(data).join('\n');
+            return { success: true, result };
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            return { success: false, error: `Properties格式化失败: ${errorMessage}` };
         }
     };
 
@@ -714,6 +790,30 @@ Charlie,35,Tokyo`}
                 }
                 type="info"
             />)
+        },
+        {
+            key: 'properties',
+            label: 'Properties 示例', // 对应旧的 tab 属性
+            children: (<Alert
+                message="Properties 格式示例"
+                description={
+                    <pre style={{ background: '#f5f5f5', padding: '12px', borderRadius: '4px' }}>
+                        {`# 应用配置
+app.name=cf-tools
+app.version=1.0.0
+
+# 数据库配置
+database.host=localhost
+database.port=3306
+database.name=myapp
+
+# 功能开关
+features.auth=true
+features.cache=false`}
+                    </pre>
+                }
+                type="info"
+            />)
         }
     ]
 
@@ -736,6 +836,7 @@ Charlie,35,Tokyo`}
                             <Option value="xml">XML</Option>
                             <Option value="toml">TOML</Option>
                             <Option value="csv">CSV</Option>
+                            <Option value="properties">Properties</Option>
                         </Select>
 
                         <SwapOutlined onClick={handleSwap} style={{ cursor: 'pointer', fontSize: '16px' }} />
@@ -751,6 +852,7 @@ Charlie,35,Tokyo`}
                             <Option value="xml">XML</Option>
                             <Option value="toml">TOML</Option>
                             <Option value="csv">CSV</Option>
+                            <Option value="properties">Properties</Option>
                         </Select>
 
                         <Button onClick={handleAutoDetect} size="small">
@@ -846,7 +948,7 @@ Charlie,35,Tokyo`}
                 配置格式转换器
             </Title>
             <Paragraph>
-                支持JSON、YAML、XML、TOML、CSV等多种配置格式的转换、格式化和验证
+                支持JSON、YAML、XML、TOML、CSV、Properties等多种配置格式的转换、格式化和验证
             </Paragraph>
 
             <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems}>
