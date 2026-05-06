@@ -1,4 +1,4 @@
-import { Card, Row, Col, Typography, Space, Statistic } from 'antd';
+import { Card, Row, Col, Typography, Space } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import {
     CodeOutlined,
@@ -8,14 +8,12 @@ import {
     BgColorsOutlined,
     FileTextOutlined,
     LockOutlined,
-    EyeOutlined,
     RobotOutlined,
     EditOutlined,
     PictureOutlined,
     TranslationOutlined,
     ApiOutlined,
     ThunderboltOutlined,
-    CalculatorOutlined,
     SwapOutlined,
     ScheduleOutlined,
     FileImageOutlined,
@@ -119,20 +117,6 @@ function Home() {
             description: '实时预览Markdown文档',
             icon: <FileTextOutlined style={{ fontSize: '24px', color: '#13c2c2' }} />,
             path: '/tools/markdown',
-            available: true
-        },
-        {
-            title: '密码生成器',
-            description: '生成安全的随机密码',
-            icon: <LockOutlined style={{ fontSize: '24px', color: '#f5222d' }} />,
-            path: '/tools/password-generator',
-            available: true
-        },
-        {
-            title: 'IP计算器',
-            description: '网络IP地址和子网掩码计算工具',
-            icon: <CalculatorOutlined style={{ fontSize: '24px', color: '#1890ff' }} />,
-            path: '/tools/ip-calculator',
             available: true
         },
         {
@@ -268,30 +252,6 @@ function Home() {
 
     return (
         <div className="home-container" style={{ background: colorBgContainer }}>
-            <div style={{ textAlign: 'center', marginBottom: '5px' }}>
-                {/* 网站总体统计信息 */}
-                {!statsLoading && (
-                    <div style={{ marginTop: '8px' }}>
-                        <Space size="middle">
-                            <Statistic
-                                title="总访问次数"
-                                value={siteStats.siteTotal}
-                                prefix={<EyeOutlined />}
-                                valueStyle={{ color: '#1890ff', fontSize: '20px' }}
-                                style={{ fontSize: '12px' }}
-                            />
-                            <Statistic
-                                title="今日访问"
-                                value={siteStats.siteToday}
-                                prefix={<EyeOutlined />}
-                                valueStyle={{ color: '#52c41a', fontSize: '20px' }}
-                                style={{ fontSize: '12px' }}
-                            />
-                        </Space>
-                    </div>
-                )}
-            </div>
-
             {/* 开发者工具集区域 */}
             <div style={{ marginBottom: '24px', width: '100%' }}>
                 <div style={{

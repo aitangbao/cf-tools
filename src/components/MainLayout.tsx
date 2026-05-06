@@ -10,90 +10,88 @@
  * Copyright <<projectCreationYear>> - 2025 tianyao, tianyao
  */
 
-import React, { useState, useEffect } from 'react';
-import { Layout, Menu, theme, Typography, Button, Drawer } from 'antd';
+import React, {useEffect, useState} from 'react';
+import {Button, Drawer, Layout, Menu, theme, Typography} from 'antd';
 import {
-    UserOutlined,
+    DownOutlined,
+    EditOutlined,
+    MenuOutlined,
     PictureOutlined,
-    ToolOutlined,
-    CodeOutlined,
-    LinkOutlined,
-    ClockCircleOutlined,
-    QrcodeOutlined,
-    BgColorsOutlined,
-    FileTextOutlined,
-    LockOutlined,
     RobotOutlined,
     TranslationOutlined,
-    EditOutlined,
-    DownOutlined,
-    MenuOutlined,
-    SwapOutlined,
-    ScheduleOutlined,
-    FileImageOutlined,
-    SafetyOutlined,
-    DiffOutlined,
-    DatabaseOutlined,
+    UserOutlined,
 } from '@ant-design/icons';
-import { Link, useLocation } from 'react-router-dom';
+import {Link, useLocation} from 'react-router-dom';
 import CuteAvatar from './CuteAvatar';
 import './MainLayout.css';
 
-const { Header, Content, Footer } = Layout;
-const { Text } = Typography;
+const {Header, Content, Footer} = Layout;
+const {Text} = Typography;
 
 // 定义顶部菜单项
 const menuItems = [
-    { key: '/', icon: <UserOutlined />, label: <Link to="/">首页</Link> },
-    {
-        key: '/tools',
-        icon: <ToolOutlined />,
-        label: (
-            <span>
-                工具集
-                <DownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
-            </span>
-        ),
-        children: [
-            { key: '/tools/config-formatter', icon: <CodeOutlined />, label: <Link to="/tools/config-formatter">JSON/配置文件格式转换</Link> },
-            { key: '/tools/naming-converter', icon: <EditOutlined />, label: <Link to="/tools/naming-converter">命名转换器</Link> },
-            { key: '/tools/cron-expression', icon: <ScheduleOutlined />, label: <Link to="/tools/cron-expression">Cron表达式</Link> },
-            { key: '/tools/base64-file', icon: <FileImageOutlined />, label: <Link to="/tools/base64-file">Base64文件转换</Link> },
-            { key: '/tools/jwt-parser', icon: <SafetyOutlined />, label: <Link to="/tools/jwt-parser">JWT解析器</Link> },
-                        { key: '/tools/text-diff', icon: <DiffOutlined />, label: <Link to="/tools/text-diff">文本比较</Link> },
-                                    { key: '/tools/aes-cipher', icon: <LockOutlined />, label: <Link to="/tools/aes-cipher">AES加密解密</Link> },
-                                                { key: '/tools/sql-to-mybatis', icon: <DatabaseOutlined />, label: <Link to="/tools/sql-to-mybatis">SQL转MyBatis</Link> },
-                                                            { key: '/tools/json-to-java', icon: <FileTextOutlined />, label: <Link to="/tools/json-to-java">JSON转JavaBean</Link> },
-            { key: '/tools/base64', icon: <CodeOutlined />, label: <Link to="/tools/base64">Base64编解码</Link> },
-            { key: '/tools/url-codec', icon: <LinkOutlined />, label: <Link to="/tools/url-codec">URL编解码</Link> },
-            { key: '/tools/timestamp', icon: <ClockCircleOutlined />, label: <Link to="/tools/timestamp">时间戳转换</Link> },
-            { key: '/tools/qr-code-generator', icon: <QrcodeOutlined />, label: <Link to="/tools/qr-code-generator">二维码生成</Link> },
-            { key: '/tools/color-picker', icon: <BgColorsOutlined />, label: <Link to="/tools/color-picker">颜色选择器</Link> },
-            { key: '/tools/markdown', icon: <FileTextOutlined />, label: <Link to="/tools/markdown">Markdown预览</Link> },
-            { key: '/tools/password-generator', icon: <LockOutlined />, label: <Link to="/tools/password-generator">密码生成器</Link> },
-            { key: '/tools/ip-calculator', icon: <CodeOutlined />, label: <Link to="/tools/ip-calculator">IP计算器</Link> },
-            { key: '/tools/file-transfer', icon: <SwapOutlined />, label: <Link to="/tools/file-transfer">F2F文件直传</Link> },
-
-
-        ]
-    },
+    {key: '/', icon: <UserOutlined/>, label: <Link to="/">首页</Link>},
+    // {
+    //     key: '/tools',
+    //     icon: <ToolOutlined />,
+    //     label: (
+    //         <span>
+    //             工具集
+    //             <DownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
+    //         </span>
+    //     ),
+    //     children: [
+    //         { key: '/tools/config-formatter', icon: <CodeOutlined />, label: <Link to="/tools/config-formatter">JSON/配置文件格式转换</Link> },
+    //         { key: '/tools/naming-converter', icon: <EditOutlined />, label: <Link to="/tools/naming-converter">命名转换器</Link> },
+    //         { key: '/tools/cron-expression', icon: <ScheduleOutlined />, label: <Link to="/tools/cron-expression">Cron表达式</Link> },
+    //         { key: '/tools/base64-file', icon: <FileImageOutlined />, label: <Link to="/tools/base64-file">Base64文件转换</Link> },
+    //         { key: '/tools/jwt-parser', icon: <SafetyOutlined />, label: <Link to="/tools/jwt-parser">JWT解析器</Link> },
+    //                     { key: '/tools/text-diff', icon: <DiffOutlined />, label: <Link to="/tools/text-diff">文本比较</Link> },
+    //                                 { key: '/tools/aes-cipher', icon: <LockOutlined />, label: <Link to="/tools/aes-cipher">AES加密解密</Link> },
+    //                                             { key: '/tools/sql-to-mybatis', icon: <DatabaseOutlined />, label: <Link to="/tools/sql-to-mybatis">SQL转MyBatis</Link> },
+    //                                                         { key: '/tools/json-to-java', icon: <FileTextOutlined />, label: <Link to="/tools/json-to-java">JSON转JavaBean</Link> },
+    //         { key: '/tools/base64', icon: <CodeOutlined />, label: <Link to="/tools/base64">Base64编解码</Link> },
+    //         { key: '/tools/url-codec', icon: <LinkOutlined />, label: <Link to="/tools/url-codec">URL编解码</Link> },
+    //         { key: '/tools/timestamp', icon: <ClockCircleOutlined />, label: <Link to="/tools/timestamp">时间戳转换</Link> },
+    //         { key: '/tools/qr-code-generator', icon: <QrcodeOutlined />, label: <Link to="/tools/qr-code-generator">二维码生成</Link> },
+    //         { key: '/tools/color-picker', icon: <BgColorsOutlined />, label: <Link to="/tools/color-picker">颜色选择器</Link> },
+    //         { key: '/tools/markdown', icon: <FileTextOutlined />, label: <Link to="/tools/markdown">Markdown预览</Link> },
+    //         { key: '/tools/password-generator', icon: <LockOutlined />, label: <Link to="/tools/password-generator">密码生成器</Link> },
+    //         { key: '/tools/ip-calculator', icon: <CodeOutlined />, label: <Link to="/tools/ip-calculator">IP计算器</Link> },
+    //         { key: '/tools/file-transfer', icon: <SwapOutlined />, label: <Link to="/tools/file-transfer">F2F文件直传</Link> },
+    //
+    //
+    //     ]
+    // },
     {
         key: '/ai',
-        icon: <RobotOutlined />,
+        icon: <RobotOutlined/>,
         label: (
             <span>
                 AI工具集
-                <DownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
+                <DownOutlined style={{fontSize: '12px', marginLeft: '4px'}}/>
             </span>
         ),
         children: [
-            { key: '/ai', icon: <RobotOutlined />, label: <Link to="/ai">AI工具总览</Link> },
-            { key: '/ai/text-generation', icon: <EditOutlined />, label: <Link to="/ai/text-generation">AI文本生成</Link> },
-            { key: '/ai/image-generation', icon: <PictureOutlined />, label: <Link to="/ai/image-generation">AI图像生成</Link> },
-            { key: '/ai/text-translation', icon: <TranslationOutlined />, label: <Link to="/ai/text-translation">AI文本翻译</Link> },
+            {key: '/ai', icon: <RobotOutlined/>, label: <Link to="/ai">AI工具总览</Link>},
+            {
+                key: '/ai/text-generation',
+                icon: <EditOutlined/>,
+                label: <Link to="/ai/text-generation">AI文本生成</Link>
+            },
+            {
+                key: '/ai/image-generation',
+                icon: <PictureOutlined/>,
+                label: <Link to="/ai/image-generation">AI图像生成</Link>
+            },
+            {
+                key: '/ai/text-translation',
+                icon: <TranslationOutlined/>,
+                label: <Link to="/ai/text-translation">AI文本翻译</Link>
+            },
         ]
     },
-    { key: '/about', icon: <PictureOutlined />, label: <Link to="https://219921.xyz/">关于</Link> },
+    {key: '/about', icon: <PictureOutlined/>, label: <Link to="https://219921.xyz/">关于</Link>},
 ];
 
 
@@ -101,7 +99,7 @@ interface MainLayoutProps {
     children: React.ReactNode;
 }
 
-export default function MainLayout({ children }: MainLayoutProps) {
+export default function MainLayout({children}: MainLayoutProps) {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [mobileMenuVisible, setMobileMenuVisible] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
@@ -123,7 +121,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     }, []);
 
     const {
-        token: { colorBgContainer, borderRadiusLG },
+        token: {colorBgContainer, borderRadiusLG},
     } = theme.useToken();
 
     // 更新时间
@@ -164,18 +162,18 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 ...item,
                 children: item.children?.map(child => ({
                     ...child,
-                    label: React.cloneElement(child.label, { onClick: handleMobileMenuClick })
+                    label: React.cloneElement(child.label, {onClick: handleMobileMenuClick})
                 }))
             };
         }
         return {
             ...item,
-            label: React.cloneElement(item.label, { onClick: handleMobileMenuClick })
+            label: React.cloneElement(item.label, {onClick: handleMobileMenuClick})
         };
     });
 
     return (
-        <Layout className="main-layout" style={{ minHeight: '100vh' }}>
+        <Layout className="main-layout" style={{minHeight: '100vh'}}>
             <Header
                 className="top-header"
                 style={{
@@ -229,7 +227,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         {isMobile && (
                             <Button
                                 type="text"
-                                icon={<MenuOutlined />}
+                                icon={<MenuOutlined/>}
                                 onClick={() => setMobileMenuVisible(true)}
                                 className="mobile-menu-button"
                                 style={{
@@ -245,7 +243,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         )}
 
                         {/* 可爱动漫头像 */}
-                        <CuteAvatar className={isMobile ? 'mobile-avatar' : ''} />
+                        <CuteAvatar className={isMobile ? 'mobile-avatar' : ''}/>
 
                         {/* 问候语和时间 - 仅桌面端显示 */}
                         {!isMobile && (
@@ -269,7 +267,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 onClose={() => setMobileMenuVisible(false)}
                 open={mobileMenuVisible}
                 width={280}
-                bodyStyle={{ padding: 0 }}
+                bodyStyle={{padding: 0}}
                 className="mobile-drawer"
             >
                 <Menu
