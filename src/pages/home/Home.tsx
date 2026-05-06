@@ -140,6 +140,13 @@ function Home() {
             icon: <SwapOutlined style={{ fontSize: '24px', color: '#13c2c2' }} />,
             path: '/tools/file-transfer',
             available: true
+        },
+        {
+            title: 'AES加密解密',
+            description: 'AES/ECB/PKCS5Padding 在线加密解密',
+            icon: <LockOutlined style={{ fontSize: '24px', color: '#f5222d' }} />,
+            path: '/tools/aes-cipher',
+            available: true
         }
     ];
 

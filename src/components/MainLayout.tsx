@@ -60,6 +60,7 @@ const menuItems = [
             { key: '/tools/base64-file', icon: <FileImageOutlined />, label: <Link to="/tools/base64-file">Base64文件转换</Link> },
             { key: '/tools/jwt-parser', icon: <SafetyOutlined />, label: <Link to="/tools/jwt-parser">JWT解析器</Link> },
                         { key: '/tools/text-diff', icon: <DiffOutlined />, label: <Link to="/tools/text-diff">文本比较</Link> },
+                                    { key: '/tools/aes-cipher', icon: <LockOutlined />, label: <Link to="/tools/aes-cipher">AES加密解密</Link> },
             { key: '/tools/base64', icon: <CodeOutlined />, label: <Link to="/tools/base64">Base64编解码</Link> },
             { key: '/tools/url-codec', icon: <LinkOutlined />, label: <Link to="/tools/url-codec">URL编解码</Link> },
             { key: '/tools/timestamp', icon: <ClockCircleOutlined />, label: <Link to="/tools/timestamp">时间戳转换</Link> },
