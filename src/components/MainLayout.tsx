@@ -33,6 +33,7 @@ import {
     FileImageOutlined,
     SafetyOutlined,
     DiffOutlined,
+    DatabaseOutlined,
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import CuteAvatar from './CuteAvatar';
@@ -61,6 +62,8 @@ const menuItems = [
             { key: '/tools/jwt-parser', icon: <SafetyOutlined />, label: <Link to="/tools/jwt-parser">JWT解析器</Link> },
                         { key: '/tools/text-diff', icon: <DiffOutlined />, label: <Link to="/tools/text-diff">文本比较</Link> },
                                     { key: '/tools/aes-cipher', icon: <LockOutlined />, label: <Link to="/tools/aes-cipher">AES加密解密</Link> },
+                                                { key: '/tools/sql-to-mybatis', icon: <DatabaseOutlined />, label: <Link to="/tools/sql-to-mybatis">SQL转MyBatis</Link> },
+                                                            { key: '/tools/json-to-java', icon: <FileTextOutlined />, label: <Link to="/tools/json-to-java">JSON转JavaBean</Link> },
             { key: '/tools/base64', icon: <CodeOutlined />, label: <Link to="/tools/base64">Base64编解码</Link> },
             { key: '/tools/url-codec', icon: <LinkOutlined />, label: <Link to="/tools/url-codec">URL编解码</Link> },
             { key: '/tools/timestamp', icon: <ClockCircleOutlined />, label: <Link to="/tools/timestamp">时间戳转换</Link> },

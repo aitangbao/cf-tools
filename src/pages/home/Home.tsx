@@ -20,7 +20,8 @@ import {
     ScheduleOutlined,
     FileImageOutlined,
     SafetyOutlined,
-    DiffOutlined
+    DiffOutlined,
+    DatabaseOutlined
 } from '@ant-design/icons';
 import { theme } from 'antd';
 import { useSiteStats } from '../../hooks/useAnalytics';
@@ -147,6 +148,20 @@ function Home() {
             icon: <LockOutlined style={{ fontSize: '24px', color: '#f5222d' }} />,
             path: '/tools/aes-cipher',
             available: true
+        },
+        {
+            title: 'SQL转MyBatis',
+            description: 'SQL建表语句转MyBatis-Plus代码模板',
+            icon: <DatabaseOutlined style={{ fontSize: '24px', color: '#722ed1' }} />,
+            path: '/tools/sql-to-mybatis',
+            available: true
+        },
+        {
+            title: 'JSON转JavaBean',
+            description: 'JSON自动转带Lombok注解的Java POJO',
+            icon: <FileTextOutlined style={{ fontSize: '24px', color: '#13c2c2' }} />,
+            path: '/tools/json-to-java',
+            available: true
         }
     ];
 
@@ -190,8 +205,16 @@ function Home() {
         return siteStats.tools[toolTitle] || { totalVisits: 0, todayVisits: 0 };
     };
 
+    interface ToolItem {
+        title: string;
+        description: string;
+        icon: React.ReactNode;
+        path: string;
+        available: boolean;
+    }
+
     // 渲染工具卡片
-    const renderToolCard = (tool: any, index: number) => {
+    const renderToolCard = (tool: ToolItem, index: number) => {
         const toolStats = getToolStats(tool.title);
         return (
             <Col xs={24} sm={12} md={8} lg={6} xl={4} xxl={3} key={index}>

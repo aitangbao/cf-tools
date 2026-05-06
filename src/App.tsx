@@ -22,6 +22,8 @@ import Base64FileConverter from './pages/tools/Base64FileConverter';
 import JwtParser from './pages/tools/JwtParser';
 import TextDiff from './pages/tools/TextDiff';
 import AESCipher from './pages/tools/AESCipher';
+import SQLToMyBatisPlus from './pages/tools/SQLToMyBatisPlus';
+import JsonToJavaBean from './pages/tools/JsonToJavaBean';
 
 // 导入AI页面
 import AIToolsOverview from './pages/ai/AIToolsOverview';
@@ -59,6 +61,8 @@ function App() {
                                                   <Route path="/tools/jwt-parser" element={<JwtParser />} />
                                                             <Route path="/tools/text-diff" element={<TextDiff />} />
                                                                       <Route path="/tools/aes-cipher" element={<AESCipher />} />
+                                                                                <Route path="/tools/sql-to-mybatis" element={<SQLToMyBatisPlus />} />
+                                                                                          <Route path="/tools/json-to-java" element={<JsonToJavaBean />} />
 
           {/* AI工具页面路由 */}
           <Route path="/ai" element={<AIToolsOverview />} />
