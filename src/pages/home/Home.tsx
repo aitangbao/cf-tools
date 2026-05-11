@@ -134,7 +134,7 @@ function Home() {
             available: true
         },
         {
-            title: 'SQL转MyBatis',
+            title: 'SQL代码生成',
             description: 'SQL建表语句转MyBatis-Plus代码模板',
             icon: <DatabaseOutlined style={{ fontSize: '24px', color: '#722ed1' }} />,
             path: '/tools/sql-to-mybatis',

@@ -306,7 +306,7 @@ ${table.columns.map(col => `        <result column="${col.name}" property="${col
 }
 
 export default function SQLToMyBatisPlus() {
-    useAutoTrackVisit('SQL转MyBatis-Plus');
+    useAutoTrackVisit('SQL代码生成');
 
     const [sqlInput, setSqlInput] = useState('');
     const [packageName, setPackageName] = useState('com.example');
@@ -334,7 +334,7 @@ export default function SQLToMyBatisPlus() {
     return (
         <div style={{ padding: '24px' }}>
             <Title level={2}>
-                <CodeOutlined /> SQL 转 MyBatis-Plus
+                <CodeOutlined /> SQL 代码生成
             </Title>
             <Paragraph>
                 输入 MySQL CREATE TABLE 语句，自动生成 Entity、Mapper、Service、Controller、XML 代码模板

@@ -19,8 +19,9 @@ function convertNaming(input: string): NamingFormats {
         return { camelCase: '', PascalCase: '', snake_case: '', SNAKE_CASE: '', kebab_case: '' };
     }
 
-    // 提取单词：以非字母数字字符分割，过滤空字符串
     const words = input
+        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+        .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
         .split(/[^a-zA-Z0-9]+/)
         .filter(w => w.length > 0)
         .map(w => w.toLowerCase());
@@ -29,29 +30,17 @@ function convertNaming(input: string): NamingFormats {
         return { camelCase: '', PascalCase: '', snake_case: '', SNAKE_CASE: '', kebab_case: '' };
     }
 
-    // 同时处理连续大小写转换的情况，如 "helloWorld" → ["hello", "world"]
-    const expandedWords: string[] = [];
-    for (const word of words) {
-        const splitByCase = word
-            .replace(/([a-z])([A-Z])/g, '$1 $2')
-            .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
-            .split(/\s+/)
-            .filter(w => w.length > 0)
-            .map(w => w.toLowerCase());
-        expandedWords.push(...splitByCase);
-    }
-
-    const camelCase = expandedWords
+    const camelCase = words
         .map((w, i) => (i === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)))
         .join('');
 
-    const PascalCase = expandedWords
+    const PascalCase = words
         .map(w => w.charAt(0).toUpperCase() + w.slice(1))
         .join('');
 
-    const snake_case = expandedWords.join('_');
-    const SNAKE_CASE = expandedWords.join('_').toUpperCase();
-    const kebab_case = expandedWords.join('-');
+    const snake_case = words.join('_');
+    const SNAKE_CASE = words.join('_').toUpperCase();
+    const kebab_case = words.join('-');
 
     return { camelCase, PascalCase, snake_case, SNAKE_CASE, kebab_case };
 }
