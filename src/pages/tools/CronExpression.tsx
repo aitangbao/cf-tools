@@ -5,80 +5,229 @@ import { useAutoTrackVisit } from '../../hooks/useAnalytics';
 
 const { Title, Paragraph, Text } = Typography;
 
-function parseCronField(field: string, min: number, max: number): number[] {
-    const values = new Set<number>();
-    const parts = field.split(',');
+type CronField =
+    | { kind: 'any' }
+    | { kind: 'unspecified' }
+    | { kind: 'lastDay' }
+    | { kind: 'values'; values: number[] };
 
-    for (const part of parts) {
-        if (part === '*') {
-            for (let i = min; i <= max; i++) values.add(i);
-        } else if (part.includes('/')) {
-            const [range, stepStr] = part.split('/');
+interface ParsedCronExpression {
+    seconds: CronField;
+    minutes: CronField;
+    hours: CronField;
+    daysOfMonth: CronField;
+    months: CronField;
+    daysOfWeek: CronField;
+    years?: CronField;
+}
+
+interface ParseFieldOptions {
+    allowQuestionMark?: boolean;
+    allowLastDay?: boolean;
+    normalizeValue?: (value: number) => number;
+}
+
+function parseCronField(field: string, min: number, max: number, options: ParseFieldOptions = {}): CronField {
+    const normalizedField = field.trim();
+
+    if (normalizedField === '*') {
+        return { kind: 'any' };
+    }
+
+    if (options.allowQuestionMark && normalizedField === '?') {
+        return { kind: 'unspecified' };
+    }
+
+    if (options.allowLastDay && normalizedField === 'L') {
+        return { kind: 'lastDay' };
+    }
+
+    const normalizeValue = options.normalizeValue ?? ((value: number) => value);
+    const values = new Set<number>();
+    const parts = normalizedField.split(',');
+
+    for (const rawPart of parts) {
+        const part = rawPart.trim();
+        if (!part) {
+            continue;
+        }
+
+        if (part.includes('/')) {
+            const [base, stepStr] = part.split('/');
             const step = parseInt(stepStr, 10);
-            const start = range === '*' ? min : parseInt(range, 10);
-            const end = range === '*' ? max : (range.includes('-') ? parseInt(range.split('-')[1], 10) : max);
+            if (!step || Number.isNaN(step) || step <= 0) {
+                throw new Error(`无效的步长字段：${part}`);
+            }
+
+            let start = min;
+            let end = max;
+
+            if (base && base !== '*') {
+                if (base.includes('-')) {
+                    const [rangeStart, rangeEnd] = base.split('-').map(Number);
+                    start = rangeStart;
+                    end = rangeEnd;
+                } else {
+                    start = parseInt(base, 10);
+                }
+            }
+
+            if (Number.isNaN(start) || Number.isNaN(end)) {
+                throw new Error(`无效的范围字段：${part}`);
+            }
+
             for (let i = start; i <= end; i += step) {
-                if (i >= min && i <= max) values.add(i);
+                if (i >= min && i <= max) {
+                    values.add(normalizeValue(i));
+                }
             }
-        } else if (part.includes('-')) {
+            continue;
+        }
+
+        if (part.includes('-')) {
             const [start, end] = part.split('-').map(Number);
-            for (let i = start; i <= end; i++) {
-                if (i >= min && i <= max) values.add(i);
+            if (Number.isNaN(start) || Number.isNaN(end)) {
+                throw new Error(`无效的范围字段：${part}`);
             }
-        } else {
-            const val = parseInt(part, 10);
-            if (!isNaN(val) && val >= min && val <= max) values.add(val);
+            for (let i = start; i <= end; i++) {
+                if (i >= min && i <= max) {
+                    values.add(normalizeValue(i));
+                }
+            }
+            continue;
+        }
+
+        const value = parseInt(part, 10);
+        if (Number.isNaN(value)) {
+            throw new Error(`无效的字段：${part}`);
+        }
+        if (value >= min && value <= max) {
+            values.add(normalizeValue(value));
         }
     }
 
-    return Array.from(values).sort((a, b) => a - b);
+    if (values.size === 0) {
+        throw new Error(`字段超出允许范围：${field}`);
+    }
+
+    return { kind: 'values', values: Array.from(values).sort((a, b) => a - b) };
+}
+
+function parseCronExpression(expression: string): ParsedCronExpression {
+    const fields = expression.trim().split(/\s+/);
+
+    if (fields.length === 5) {
+        const [minutes, hours, daysOfMonth, months, daysOfWeek] = fields;
+        return {
+            seconds: { kind: 'values', values: [0] },
+            minutes: parseCronField(minutes, 0, 59),
+            hours: parseCronField(hours, 0, 23),
+            daysOfMonth: parseCronField(daysOfMonth, 1, 31, { allowLastDay: true, allowQuestionMark: true }),
+            months: parseCronField(months, 1, 12),
+            daysOfWeek: parseCronField(daysOfWeek, 0, 7, { allowQuestionMark: true, normalizeValue: (value) => value === 7 ? 0 : value }),
+        };
+    }
+
+    if (fields.length === 6 || fields.length === 7) {
+        const [seconds, minutes, hours, daysOfMonth, months, daysOfWeek, years] = fields;
+        return {
+            seconds: parseCronField(seconds, 0, 59),
+            minutes: parseCronField(minutes, 0, 59),
+            hours: parseCronField(hours, 0, 23),
+            daysOfMonth: parseCronField(daysOfMonth, 1, 31, { allowLastDay: true, allowQuestionMark: true }),
+            months: parseCronField(months, 1, 12),
+            daysOfWeek: parseCronField(daysOfWeek, 0, 7, { allowQuestionMark: true, normalizeValue: (value) => value === 7 ? 0 : value }),
+            years: years ? parseCronField(years, 1970, 2099) : undefined,
+        };
+    }
+
+    throw new Error('Cron 表达式必须是 5 个字段，或 Quartz 风格的 6/7 个字段');
+}
+
+function isDayFieldRestricted(field: CronField): boolean {
+    return field.kind === 'values' || field.kind === 'lastDay';
+}
+
+function matchesField(field: CronField, value: number, date: Date): boolean {
+    if (field.kind === 'any' || field.kind === 'unspecified') {
+        return true;
+    }
+
+    if (field.kind === 'lastDay') {
+        return value === new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    }
+
+    return field.values.includes(value);
 }
 
 function getNextExecutions(expression: string, count: number): Date[] {
-    const fields = expression.trim().split(/\s+/);
-    if (fields.length !== 5) {
-        throw new Error('Cron 表达式必须是 5 个字段：分 时 日 月 周');
-    }
-
-    const minutes = parseCronField(fields[0], 0, 59);
-    const hours = parseCronField(fields[1], 0, 23);
-    const daysOfMonth = parseCronField(fields[2], 1, 31);
-    const months = parseCronField(fields[3], 1, 12);
-    const daysOfWeek = parseCronField(fields[4], 0, 7);
-
-    // 星期 0 和 7 都代表周日
-    const dowSet = new Set(daysOfWeek);
-    if (dowSet.has(0)) dowSet.add(7);
-    if (dowSet.has(7)) dowSet.add(0);
-    const daysOfWeekFinal = Array.from(dowSet).sort((a, b) => a - b);
-
+    const parsed = parseCronExpression(expression);
     const results: Date[] = [];
     const now = new Date();
-    // 从当前时间开始，逐分钟搜索
-    const cursor = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), 0, 0);
+    const cursor = new Date(now.getTime() + 1000);
+    cursor.setMilliseconds(0);
 
-    // 最多搜索未来 4 年，防止无限循环
     const maxSearch = new Date(cursor.getTime());
     maxSearch.setFullYear(maxSearch.getFullYear() + 4);
 
     while (results.length < count && cursor <= maxSearch) {
-        cursor.setMinutes(cursor.getMinutes() + 1);
+        const year = cursor.getFullYear();
+        const month = cursor.getMonth() + 1;
+        const dayOfMonth = cursor.getDate();
+        const dayOfWeek = cursor.getDay();
+        const hour = cursor.getHours();
+        const minute = cursor.getMinutes();
+        const second = cursor.getSeconds();
 
-        const m = cursor.getMinutes();
-        const h = cursor.getHours();
-        const dom = cursor.getDate();
-        const mon = cursor.getMonth() + 1;
-        const dow = cursor.getDay();
-
-        if (
-            minutes.includes(m) &&
-            hours.includes(h) &&
-            months.includes(mon) &&
-            daysOfMonth.includes(dom) &&
-            daysOfWeekFinal.includes(dow)
-        ) {
-            results.push(new Date(cursor.getTime()));
+        if (parsed.years && !matchesField(parsed.years, year, cursor)) {
+            cursor.setFullYear(year + 1, 0, 1);
+            cursor.setHours(0, 0, 0, 0);
+            continue;
         }
+
+        if (!matchesField(parsed.months, month, cursor)) {
+            cursor.setMonth(cursor.getMonth() + 1, 1);
+            cursor.setHours(0, 0, 0, 0);
+            continue;
+        }
+
+        const dayOfMonthMatches = matchesField(parsed.daysOfMonth, dayOfMonth, cursor);
+        const dayOfWeekMatches = matchesField(parsed.daysOfWeek, dayOfWeek, cursor);
+        const dayOfMonthRestricted = isDayFieldRestricted(parsed.daysOfMonth);
+        const dayOfWeekRestricted = isDayFieldRestricted(parsed.daysOfWeek);
+
+        let dayMatches = true;
+        if (dayOfMonthRestricted && dayOfWeekRestricted) {
+            dayMatches = dayOfMonthMatches || dayOfWeekMatches;
+        } else if (dayOfMonthRestricted) {
+            dayMatches = dayOfMonthMatches;
+        } else if (dayOfWeekRestricted) {
+            dayMatches = dayOfWeekMatches;
+        }
+
+        if (!dayMatches) {
+            cursor.setDate(cursor.getDate() + 1);
+            cursor.setHours(0, 0, 0, 0);
+            continue;
+        }
+
+        if (!matchesField(parsed.hours, hour, cursor)) {
+            cursor.setHours(cursor.getHours() + 1, 0, 0, 0);
+            continue;
+        }
+
+        if (!matchesField(parsed.minutes, minute, cursor)) {
+            cursor.setMinutes(cursor.getMinutes() + 1, 0, 0);
+            continue;
+        }
+
+        if (!matchesField(parsed.seconds, second, cursor)) {
+            cursor.setSeconds(cursor.getSeconds() + 1, 0);
+            continue;
+        }
+
+        results.push(new Date(cursor.getTime()));
+        cursor.setSeconds(cursor.getSeconds() + 1, 0);
     }
 
     return results;
@@ -90,13 +239,14 @@ function formatDateTime(date: Date): string {
 }
 
 const examples = [
-    { expr: '0 0 L * *', desc: '每月的最后1天执行' },
-    { expr: '* * * * *', desc: '每1分钟执行一次' },
-    { expr: '*/10 * * * *', desc: '每隔10分钟执行一次' },
-    { expr: '0 */1 * * *', desc: '每隔1小时执行一次' },
-    { expr: '30 21 * * *', desc: '每晚的21:30执行' },
-    { expr: '3,15 * * * *', desc: '每小时的第3和第15分钟执行' },
-    { expr: '3,15 8-11 * * *', desc: '在上午8点到11点的第3和第15分钟执行' },
+    { expr: '0 0 L * *', desc: '每月最后一天的 00:00 执行' },
+    { expr: '* * * * *', desc: '每 1 分钟执行一次' },
+    { expr: '*/10 * * * *', desc: '每隔 10 分钟执行一次' },
+    { expr: '0 */1 * * *', desc: '每隔 1 小时执行一次' },
+    { expr: '30 21 * * *', desc: '每天 21:30 执行' },
+    { expr: '3,15 * * * *', desc: '每小时的第 3 和第 15 分钟执行' },
+    { expr: '3,15 8-11 * * *', desc: '上午 8 点到 11 点的第 3 和第 15 分钟执行' },
+    { expr: '0 0 2 1/5 * ?', desc: 'Quartz：每月从 1 号开始每隔 5 天的 02:00:00 执行' },
 ];
 
 const serviceCommands = [
@@ -193,7 +343,7 @@ export default function CronExpression() {
                         <Input
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="例如：0 */6 * * *"
+                            placeholder="例如：0 */6 * * * 或 0 0 2 1/5 * ?"
                             style={{ marginTop: '8px' }}
                             onPressEnter={handleGenerate}
                         />
@@ -205,7 +355,7 @@ export default function CronExpression() {
                     </Col>
                 </Row>
                 <Paragraph type="secondary" style={{ marginTop: '12px', fontSize: '12px' }}>
-                    提示：标准 Cron 为 5 字段（分 时 日 月 周），如 <Text code>0 */6 * * *</Text> 表示每 6 小时执行一次
+                    提示：支持标准 Cron 5 字段（分 时 日 月 周）和 Quartz 6/7 字段（秒 分 时 日 月 周 [年]），如 <Text code>0 */6 * * *</Text>、<Text code>0 0 2 1/5 * ?</Text>
                 </Paragraph>
             </Card>
 
@@ -225,13 +375,22 @@ export default function CronExpression() {
                 <Col xs={24} md={12}>
                     <Card title="Cron 表达式说明" size="small">
                         <pre style={{ fontSize: '12px', lineHeight: '1.6', background: '#f5f5f5', padding: '12px', borderRadius: '4px', overflow: 'auto' }}>
-{`* * * * *  [command]
-│ │ │ │ │
-│ │ │ │ └── 星期 (0 - 7, Sunday=0 or 7)
-│ │ │ └──── 月 (1 - 12)
-│ │ └────── 日 (1 - 31)
-│ └──────── 时 (0 - 23)
-└────────── 分 (0 - 59)`}
+{`标准 Cron：* * * * *  [command]
+           │ │ │ │ │
+           │ │ │ │ └── 星期 (0 - 7, Sunday=0 or 7)
+           │ │ │ └──── 月 (1 - 12)
+           │ │ └────── 日 (1 - 31, 支持 L)
+           │ └──────── 时 (0 - 23)
+           └────────── 分 (0 - 59)
+
+Quartz：    * * * * * *
+           │ │ │ │ │ │
+           │ │ │ │ │ └── 星期 (0 - 7, 支持 ?)
+           │ │ │ │ └──── 月 (1 - 12)
+           │ │ │ └────── 日 (1 - 31, 支持 L / ?)
+           │ │ └──────── 时 (0 - 23)
+           │ └────────── 分 (0 - 59)
+           └──────────── 秒 (0 - 59)`}
                         </pre>
                         <div style={{ marginTop: '12px' }}>
                             <Tag color="blue">*</Tag> <Text type="secondary">表示任意值</Text><br />
