@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, Input, Button, Typography, Row, Col, Tabs, message } from 'antd';
-import { CodeOutlined, CopyOutlined } from '@ant-design/icons';
+import { CodeOutlined, CopyOutlined, DownloadOutlined } from '@ant-design/icons';
+import JSZip from 'jszip';
 import { useAutoTrackVisit } from '../../hooks/useAnalytics';
 
 const { Title, Paragraph } = Typography;
@@ -42,7 +43,9 @@ function sqlTypeToJavaType(sqlType: string): string {
     if (t.includes('decimal') || t.includes('numeric')) return 'BigDecimal';
     if (t.includes('float')) return 'Float';
     if (t.includes('double')) return 'Double';
-    if (t.includes('datetime') || t.includes('timestamp')) return 'LocalDateTime';
+    // DATETIME 实体字段使用传统 Date 类型，TIMESTAMP 保持原有映射。
+    if (t.includes('datetime')) return 'Date';
+    if (t.includes('timestamp')) return 'LocalDateTime';
     if (t.includes('date')) return 'LocalDate';
     if (t.includes('time')) return 'LocalTime';
     if (t.includes('blob') || t.includes('binary')) return 'byte[]';
@@ -73,30 +76,79 @@ function sqlTypeToJdbcType(sqlType: string): string {
     return 'VARCHAR';
 }
 
+/** 按括号层级与引号状态拆分字段定义，保留 DECIMAL(10,2) 等类型中的逗号。 */
+function splitColumns(body: string): string[] {
+    const parts: string[] = [];
+    let start = 0;
+    let depth = 0;
+    let quote = '';
+    for (let i = 0; i < body.length; i++) {
+        const char = body[i];
+        if (quote) {
+            if (char === '\\') {
+                i++;
+            } else if (char === quote) {
+                if (body[i + 1] === quote) i++;
+                else quote = '';
+            }
+        } else if (char === "'" || char === '"' || char === '`') {
+            quote = char;
+        } else if (char === '(') {
+            depth++;
+        } else if (char === ')') {
+            depth--;
+        } else if (char === ',' && depth === 0) {
+            parts.push(body.slice(start, i));
+            start = i + 1;
+        }
+    }
+    parts.push(body.slice(start));
+    return parts;
+}
+
 function parseSQL(sql: string): TableInfo | null {
     const trimmed = sql.trim();
     if (!trimmed) return null;
 
-    // 匹配 CREATE TABLE 表名
-    let match = trimmed.match(/CREATE\s+TABLE\s+(?:`?)(\w+)(?:`?)\s*\((.*)\)\s*(?:ENGINE|COMMENT|DEFAULT|CHARSET|;|$)/is);
-    if (!match) {
-        // 尝试更宽松的匹配
-        match = trimmed.match(/CREATE\s+TABLE\s+(?:`?)(\w+)(?:`?)\s*\((.*)\)/is);
-    }
+    // 定位字段定义的外层括号，避免表注释中的括号影响解析。
+    const match = trimmed.match(/^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?`?(\w+)`?\s*\(/i);
     if (!match) return null;
 
     const tableName = match[1];
-    const body = match[2];
+    const opening = match[0].length - 1;
+    let closing = -1;
+    let depth = 0;
+    let quote = '';
+    for (let i = opening; i < trimmed.length; i++) {
+        const char = trimmed[i];
+        if (quote) {
+            if (char === '\\') {
+                i++;
+            } else if (char === quote) {
+                if (trimmed[i + 1] === quote) i++;
+                else quote = '';
+            }
+        } else if (char === "'" || char === '"' || char === '`') {
+            quote = char;
+        } else if (char === '(') {
+            depth++;
+        } else if (char === ')' && --depth === 0) {
+            closing = i;
+            break;
+        }
+    }
+    if (closing < 0) return null;
+    const body = trimmed.slice(opening + 1, closing);
 
     // 提取表注释
-    const tableCommentMatch = trimmed.match(/COMMENT\s*=\s*['"`](.+?)['"`]/i);
+    const tableCommentMatch = trimmed.slice(closing + 1).match(/COMMENT\s*=\s*['"`](.+?)['"`]/i);
     const tableComment = tableCommentMatch ? tableCommentMatch[1] : '';
 
     const columns: ColumnInfo[] = [];
     let pkColumn: ColumnInfo | undefined;
 
     // 按行分割，处理每个字段或约束
-    const lines = body.split(',');
+    const lines = splitColumns(body);
     for (let line of lines) {
         line = line.trim();
         if (!line) continue;
@@ -150,6 +202,8 @@ function parseSQL(sql: string): TableInfo | null {
         pkColumn = columns[0];
     }
 
+    if (columns.length === 0) return null;
+
     return {
         name: tableName,
         className: toCamelCase(tableName, true),
@@ -157,6 +211,20 @@ function parseSQL(sql: string): TableInfo | null {
         columns,
         pkColumn,
     };
+}
+
+/** 按建表语句拆分输入，避免后一个表的字段被前一个表的解析结果吞入。 */
+function parseTables(sql: string): TableInfo[] | null {
+    const starts = [...sql.matchAll(/CREATE\s+TABLE\b/gi)].map(match => match.index);
+    if (starts.length === 0) return null;
+
+    const tables: TableInfo[] = [];
+    for (let i = 0; i < starts.length; i++) {
+        const table = parseSQL(sql.slice(starts[i], starts[i + 1]));
+        if (!table) return null;
+        tables.push(table);
+    }
+    return tables;
 }
 
 function generateEntity(table: TableInfo, pkg: string): string {
@@ -167,7 +235,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
-${table.columns.some(c => c.javaType === 'LocalDateTime') ? 'import java.time.LocalDateTime;\n' : ''}${table.columns.some(c => c.javaType === 'LocalDate') ? 'import java.time.LocalDate;\n' : ''}${table.columns.some(c => c.javaType === 'LocalTime') ? 'import java.time.LocalTime;\n' : ''}${table.columns.some(c => c.javaType === 'BigDecimal') ? 'import java.math.BigDecimal;\n' : ''}
+${table.columns.some(c => c.javaType === 'Date') ? 'import java.util.Date;\n' : ''}${table.columns.some(c => c.javaType === 'LocalDateTime') ? 'import java.time.LocalDateTime;\n' : ''}${table.columns.some(c => c.javaType === 'LocalDate') ? 'import java.time.LocalDate;\n' : ''}${table.columns.some(c => c.javaType === 'LocalTime') ? 'import java.time.LocalTime;\n' : ''}${table.columns.some(c => c.javaType === 'BigDecimal') ? 'import java.math.BigDecimal;\n' : ''}
 /**
  * ${table.comment || table.className}
  */
@@ -310,20 +378,70 @@ export default function SQLToMyBatisPlus() {
 
     const [sqlInput, setSqlInput] = useState('');
     const [packageName, setPackageName] = useState('com.example');
-    const [tableInfo, setTableInfo] = useState<TableInfo | null>(null);
+    const [tables, setTables] = useState<TableInfo[]>([]);
+    const [selectedTable, setSelectedTable] = useState('');
+    const [downloading, setDownloading] = useState(false);
+    const tableInfo = tables.find(table => table.name === selectedTable);
+    const normalizedPackage = packageName.trim();
 
     const handleGenerate = () => {
         if (!sqlInput.trim()) {
             message.warning('请输入 CREATE TABLE SQL 语句');
             return;
         }
-        const result = parseSQL(sqlInput);
+        if (!/^[a-zA-Z_$][\w$]*(?:\.[a-zA-Z_$][\w$]*)*$/.test(normalizedPackage)) {
+            message.error('请输入有效的 Java 包名');
+            return;
+        }
+        const result = parseTables(sqlInput);
         if (!result) {
             message.error('SQL 解析失败，请检查是否为标准的 CREATE TABLE 语句');
             return;
         }
-        setTableInfo(result);
-        message.success('生成成功');
+        if (new Set(result.map(table => table.className)).size !== result.length) {
+            message.error('存在生成同名 Java 类的表，请检查表名');
+            return;
+        }
+        setTables(result);
+        setSelectedTable(result[0].name);
+        setPackageName(normalizedPackage);
+        message.success(`已生成 ${result.length} 张表的代码`);
+    };
+
+    /** 将所有表的模板文件放入标准 Maven 目录，并触发一次 ZIP 下载。 */
+    const handleDownload = async () => {
+        if (!/^[a-zA-Z_$][\w$]*(?:\.[a-zA-Z_$][\w$]*)*$/.test(normalizedPackage)) {
+            message.error('请输入有效的 Java 包名');
+            return;
+        }
+        const zip = new JSZip();
+        const javaRoot = `src/main/java/${normalizedPackage.replace(/\./g, '/')}`;
+        for (const table of tables) {
+            zip.file(`${javaRoot}/entity/${table.className}.java`, generateEntity(table, normalizedPackage));
+            zip.file(`${javaRoot}/mapper/${table.className}Mapper.java`, generateMapper(table, normalizedPackage));
+            zip.file(`${javaRoot}/service/${table.className}Service.java`, generateService(table, normalizedPackage));
+            zip.file(`${javaRoot}/service/impl/${table.className}ServiceImpl.java`, generateServiceImpl(table, normalizedPackage));
+            zip.file(`${javaRoot}/controller/${table.className}Controller.java`, generateController(table, normalizedPackage));
+            zip.file(`src/main/resources/mapper/${table.className}Mapper.xml`, generateXML(table, normalizedPackage));
+        }
+
+        setDownloading(true);
+        try {
+            const blob = await zip.generateAsync({ type: 'blob' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'sql-code.zip';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch (error) {
+            console.error('代码打包失败', error);
+            message.error('下载失败，请重试');
+        } finally {
+            setDownloading(false);
+        }
     };
 
     const handleCopy = (text: string) => {
@@ -337,7 +455,7 @@ export default function SQLToMyBatisPlus() {
                 <CodeOutlined /> SQL 代码生成
             </Title>
             <Paragraph>
-                输入 MySQL CREATE TABLE 语句，自动生成 Entity、Mapper、Service、Controller、XML 代码模板
+                输入一条或多条 MySQL CREATE TABLE 语句，自动生成 Entity、Mapper、Service、Controller、XML 代码模板
             </Paragraph>
 
             <Row gutter={[16, 16]}>
@@ -364,52 +482,58 @@ export default function SQLToMyBatisPlus() {
                 <Col xs={24} md={14}>
                     {tableInfo && (
                         <Card title={`表: ${tableInfo.name} → ${tableInfo.className}`} size="small">
+                            <Button icon={<DownloadOutlined />} onClick={handleDownload} loading={downloading} style={{ marginBottom: '12px' }}>
+                                下载全部（{tables.length} 张表）
+                            </Button>
+                            {tables.length > 1 && (
+                                <Tabs activeKey={selectedTable} onChange={setSelectedTable} items={tables.map(table => ({ key: table.name, label: table.name }))} />
+                            )}
                             <Tabs type="card">
                                 <TabPane tab="Entity" key="entity">
                                     <pre style={{ fontSize: '12px', background: '#f5f5f5', padding: '12px', borderRadius: '4px', overflow: 'auto', maxHeight: '500px' }}>
-                                        {generateEntity(tableInfo, packageName)}
+                                        {generateEntity(tableInfo, normalizedPackage)}
                                     </pre>
-                                    <Button icon={<CopyOutlined />} onClick={() => handleCopy(generateEntity(tableInfo, packageName))} size="small">
+                                    <Button icon={<CopyOutlined />} onClick={() => handleCopy(generateEntity(tableInfo, normalizedPackage))} size="small">
                                         复制
                                     </Button>
                                 </TabPane>
                                 <TabPane tab="Mapper" key="mapper">
                                     <pre style={{ fontSize: '12px', background: '#f5f5f5', padding: '12px', borderRadius: '4px', overflow: 'auto', maxHeight: '500px' }}>
-                                        {generateMapper(tableInfo, packageName)}
+                                        {generateMapper(tableInfo, normalizedPackage)}
                                     </pre>
-                                    <Button icon={<CopyOutlined />} onClick={() => handleCopy(generateMapper(tableInfo, packageName))} size="small">
+                                    <Button icon={<CopyOutlined />} onClick={() => handleCopy(generateMapper(tableInfo, normalizedPackage))} size="small">
                                         复制
                                     </Button>
                                 </TabPane>
                                 <TabPane tab="Service" key="service">
                                     <pre style={{ fontSize: '12px', background: '#f5f5f5', padding: '12px', borderRadius: '4px', overflow: 'auto', maxHeight: '500px' }}>
-                                        {generateService(tableInfo, packageName)}
+                                        {generateService(tableInfo, normalizedPackage)}
                                     </pre>
-                                    <Button icon={<CopyOutlined />} onClick={() => handleCopy(generateService(tableInfo, packageName))} size="small">
+                                    <Button icon={<CopyOutlined />} onClick={() => handleCopy(generateService(tableInfo, normalizedPackage))} size="small">
                                         复制
                                     </Button>
                                 </TabPane>
                                 <TabPane tab="ServiceImpl" key="serviceImpl">
                                     <pre style={{ fontSize: '12px', background: '#f5f5f5', padding: '12px', borderRadius: '4px', overflow: 'auto', maxHeight: '500px' }}>
-                                        {generateServiceImpl(tableInfo, packageName)}
+                                        {generateServiceImpl(tableInfo, normalizedPackage)}
                                     </pre>
-                                    <Button icon={<CopyOutlined />} onClick={() => handleCopy(generateServiceImpl(tableInfo, packageName))} size="small">
+                                    <Button icon={<CopyOutlined />} onClick={() => handleCopy(generateServiceImpl(tableInfo, normalizedPackage))} size="small">
                                         复制
                                     </Button>
                                 </TabPane>
                                 <TabPane tab="Controller" key="controller">
                                     <pre style={{ fontSize: '12px', background: '#f5f5f5', padding: '12px', borderRadius: '4px', overflow: 'auto', maxHeight: '500px' }}>
-                                        {generateController(tableInfo, packageName)}
+                                        {generateController(tableInfo, normalizedPackage)}
                                     </pre>
-                                    <Button icon={<CopyOutlined />} onClick={() => handleCopy(generateController(tableInfo, packageName))} size="small">
+                                    <Button icon={<CopyOutlined />} onClick={() => handleCopy(generateController(tableInfo, normalizedPackage))} size="small">
                                         复制
                                     </Button>
                                 </TabPane>
                                 <TabPane tab="XML" key="xml">
                                     <pre style={{ fontSize: '12px', background: '#f5f5f5', padding: '12px', borderRadius: '4px', overflow: 'auto', maxHeight: '500px' }}>
-                                        {generateXML(tableInfo, packageName)}
+                                        {generateXML(tableInfo, normalizedPackage)}
                                     </pre>
-                                    <Button icon={<CopyOutlined />} onClick={() => handleCopy(generateXML(tableInfo, packageName))} size="small">
+                                    <Button icon={<CopyOutlined />} onClick={() => handleCopy(generateXML(tableInfo, normalizedPackage))} size="small">
                                         复制
                                     </Button>
                                 </TabPane>

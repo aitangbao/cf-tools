@@ -1,7 +1,7 @@
 
 # CF Tools
 
-一个基于 Cloudflare Workers 的全栈 React 工具站，涵盖常用开发与日常实用工具，并内置访问统计与可选的 AI 能力。
+一个基于 Cloudflare Workers 的全栈 React 工具站，涵盖常用开发与日常实用工具，并内置访问统计能力。
 
 - 前端：React 19 + TypeScript + Vite + Ant Design
 - 后端：Hono（运行在 Cloudflare Workers）
@@ -43,9 +43,6 @@
 - IP计算器 （`/tools/ip-calculator`）
 - P2P文件直传 （`/tools/file-transfer`）
 
-可选的 AI 工具：
-- AI 工具总览、文本生成、图像生成、文本翻译（基于 Cloudflare AI；通过 Worker 代理）
-
 访问统计：
 - 每个工具页都会自动记录访问数据（总访问量、当日访问量）到 KV。
 
@@ -60,10 +57,10 @@ cf-tools/
 ├── src/                 # 前端 React 代码
 │   ├── components/      # 通用组件
 │   ├── hooks/           # 分析埋点等 Hooks
-│   ├── pages/           # 各工具页面与 AI 页面
+│   ├── pages/           # 各工具页面
 │   └── services/        # 前端服务封装
 ├── worker/              # Cloudflare Workers 后端 API
-│   ├── routes/          # 路由：index / analytics / proxy
+│   ├── routes/          # 路由：index / analytics / p2p
 │   ├── middleware/      # 中间件：CORS
 │   └── types.ts         # 类型定义（KV 绑定等）
 ├── wrangler.jsonc       # Workers 配置
@@ -254,18 +251,6 @@ curl -X POST "http://localhost:8787/api/analytics/track" \
 }
 ```
 
-4) Cloudflare AI 代理（可选）
-
-- 通过 Worker 代理到 Cloudflare AI API：`/api/proxies/cloudflare/*`
-- 示例：列出模型
-
-```bash
-curl -H "Authorization: Bearer <CF_API_TOKEN>" \
-  "http://localhost:8787/api/proxies/cloudflare/client/v4/accounts/<ACCOUNT_ID>/ai/models"
-```
-
-注意：需要有效的 Cloudflare API Token，建议使用账号级别权限最小化原则。
-
 ---
 
 ## 自定义域名（可选）
@@ -315,4 +300,3 @@ npm run preview
 ---
 
 感谢使用 CF Tools！如有问题或建议，欢迎提交 Issue 或 PR。
-

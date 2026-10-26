@@ -25,12 +25,6 @@ import AESCipher from './pages/tools/AESCipher';
 import SQLToMyBatisPlus from './pages/tools/SQLToMyBatisPlus';
 import JsonToJavaBean from './pages/tools/JsonToJavaBean';
 
-// 导入AI页面
-import AIToolsOverview from './pages/ai/AIToolsOverview';
-import AITextGeneration from './pages/ai/AITextGeneration';
-import AIImageGeneration from './pages/ai/AIImageGeneration';
-import AITextTranslation from './pages/ai/AITextTranslation';
-
 function App() {
   return (
     <BrowserRouter>
@@ -63,12 +57,6 @@ function App() {
                                                                       <Route path="/tools/aes-cipher" element={<AESCipher />} />
                                                                                 <Route path="/tools/sql-to-mybatis" element={<SQLToMyBatisPlus />} />
                                                                                           <Route path="/tools/json-to-java" element={<JsonToJavaBean />} />
-
-          {/* AI工具页面路由 */}
-          <Route path="/ai" element={<AIToolsOverview />} />
-          <Route path="/ai/text-generation" element={<AITextGeneration />} />
-          <Route path="/ai/image-generation" element={<AIImageGeneration />} />
-          <Route path="/ai/text-translation" element={<AITextTranslation />} />
 
           {/* 可选: 404 页面 */}
           <Route path="*" element={<h2>404 Not Found</h2>} />

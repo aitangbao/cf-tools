@@ -8,12 +8,8 @@ import {
     BgColorsOutlined,
     FileTextOutlined,
     LockOutlined,
-    RobotOutlined,
     EditOutlined,
-    PictureOutlined,
-    TranslationOutlined,
     ApiOutlined,
-    ThunderboltOutlined,
     SwapOutlined,
     ScheduleOutlined,
     FileImageOutlined,
@@ -149,38 +145,6 @@ function Home() {
         }
     ];
 
-    // AI工具集
-    const aiTools = [
-        {
-            title: 'AI工具总览',
-            description: '探索各种AI智能工具',
-            icon: <RobotOutlined style={{ fontSize: '24px', color: '#722ed1' }} />,
-            path: '/ai',
-            available: true
-        },
-        {
-            title: 'AI文本生成',
-            description: '智能生成各类文本内容',
-            icon: <EditOutlined style={{ fontSize: '24px', color: '#1890ff' }} />,
-            path: '/ai/text-generation',
-            available: true
-        },
-        {
-            title: 'AI图像生成',
-            description: '基于描述生成精美图像',
-            icon: <PictureOutlined style={{ fontSize: '24px', color: '#52c41a' }} />,
-            path: '/ai/image-generation',
-            available: true
-        },
-        {
-            title: 'AI文本翻译',
-            description: '多语言智能翻译服务',
-            icon: <TranslationOutlined style={{ fontSize: '24px', color: '#fa8c16' }} />,
-            path: '/ai/text-translation',
-            available: true
-        }
-    ];
-
     // 获取工具的访问统计
     const getToolStats = (toolTitle: string) => {
         if (statsLoading || !siteStats.tools) {
@@ -298,56 +262,6 @@ function Home() {
                 }}>
                     <Row gutter={[16, 16]}>
                         {devTools.map((tool, index) => renderToolCard(tool, index))}
-                    </Row>
-                </div>
-            </div>
-
-            {/* AI工具集区域 */}
-            <div style={{ marginBottom: '24px', width: '100%' }}>
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    marginBottom: '16px',
-                    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    width: '100%'
-                }}>
-                    <Title level={2} style={{
-                        color: 'white',
-                        margin: 0,
-                        fontSize: '20px',
-                        display: 'flex',
-                        alignItems: 'center'
-                    }}>
-                        <ThunderboltOutlined style={{ marginRight: '8px' }} />
-                        AI 智能工具
-                    </Title>
-                    <Paragraph style={{
-                        color: 'rgba(255, 255, 255, 0.9)',
-                        fontSize: '14px',
-                        margin: '0 0 0 16px',
-                        flex: 1
-                    }}>
-                        人工智能赋能，创意无限可能
-                    </Paragraph>
-                </div>
-
-                <div style={{
-                    borderBottom: '2px solid #e8e8e8',
-                    marginBottom: '16px',
-                    width: '100%'
-                }} />
-
-                <div style={{
-                    background: 'white',
-                    borderRadius: '8px',
-                    padding: '16px',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                    width: '100%'
-                }}>
-                    <Row gutter={[16, 16]}>
-                        {aiTools.map((tool, index) => renderToolCard(tool, index))}
                     </Row>
                 </div>
             </div>

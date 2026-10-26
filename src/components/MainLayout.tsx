@@ -13,12 +13,8 @@
 import React, {useEffect, useState} from 'react';
 import {Button, Drawer, Layout, Menu, theme, Typography} from 'antd';
 import {
-    DownOutlined,
-    EditOutlined,
     MenuOutlined,
     PictureOutlined,
-    RobotOutlined,
-    TranslationOutlined,
     UserOutlined,
 } from '@ant-design/icons';
 import {Link, useLocation} from 'react-router-dom';
@@ -63,34 +59,6 @@ const menuItems = [
     //
     //     ]
     // },
-    {
-        key: '/ai',
-        icon: <RobotOutlined/>,
-        label: (
-            <span>
-                AI工具集
-                <DownOutlined style={{fontSize: '12px', marginLeft: '4px'}}/>
-            </span>
-        ),
-        children: [
-            {key: '/ai', icon: <RobotOutlined/>, label: <Link to="/ai">AI工具总览</Link>},
-            {
-                key: '/ai/text-generation',
-                icon: <EditOutlined/>,
-                label: <Link to="/ai/text-generation">AI文本生成</Link>
-            },
-            {
-                key: '/ai/image-generation',
-                icon: <PictureOutlined/>,
-                label: <Link to="/ai/image-generation">AI图像生成</Link>
-            },
-            {
-                key: '/ai/text-translation',
-                icon: <TranslationOutlined/>,
-                label: <Link to="/ai/text-translation">AI文本翻译</Link>
-            },
-        ]
-    },
     {key: '/about', icon: <PictureOutlined/>, label: <Link to="https://219921.xyz/">关于</Link>},
 ];
 
@@ -157,18 +125,10 @@ export default function MainLayout({children}: MainLayoutProps) {
 
     // 移动端菜单项（转换为垂直模式）
     const mobileMenuItems = menuItems.map(item => {
-        if (item.children) {
-            return {
-                ...item,
-                children: item.children?.map(child => ({
-                    ...child,
-                    label: React.cloneElement(child.label, {onClick: handleMobileMenuClick})
-                }))
-            };
-        }
+        const label = item.label as React.ReactElement<{ onClick?: () => void }>;
         return {
             ...item,
-            label: React.cloneElement(item.label, {onClick: handleMobileMenuClick})
+            label: React.cloneElement(label, {onClick: handleMobileMenuClick})
         };
     });
 
